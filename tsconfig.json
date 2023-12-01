@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "outDir": "dist",
+    "jsx": "react",
+    "strict": true,
+    "target": "es2020",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "module": "CommonJS"
+  },
+  "include": [
+    "**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
