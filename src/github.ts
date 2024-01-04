@@ -6,8 +6,8 @@ import fetch from 'node-fetch';
 
 const exec = promisify(childProcess.exec);
 
-const GITHUB_TOKEN = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
-const GITHUB_USERNAME = process.env.GITHUB_USERNAME;
+const GITHUB_TOKEN = process.env.GH_PERSONAL_ACCESS_TOKEN;
+const GITHUB_USERNAME = process.env.GH_USERNAME;
 
 type Update = {
   fileName: string,
