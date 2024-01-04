@@ -8,6 +8,7 @@ const exec = promisify(childProcess.exec);
 
 const GITHUB_TOKEN = process.env.GH_PERSONAL_ACCESS_TOKEN;
 const GITHUB_USERNAME = process.env.GH_USERNAME;
+const GITHUB_EMAIL = process.env.GH_EMAIL;
 
 type Update = {
   fileName: string,
@@ -86,6 +87,8 @@ const updateFiles = async (options: PullRequestOptions) => {
 };
 
 const commitAndPush = async (options: PullRequestOptions, forkFullName: string) => {
+  await exec(`git -C "${options.repositoryDirectory}" config user.name "${GITHUB_USERNAME}"`);
+  await exec(`git -C "${options.repositoryDirectory}" config user.email "${GITHUB_EMAIL}"`);
   await exec(`git -C "${options.repositoryDirectory}" remote set-url origin https://${GITHUB_TOKEN}@github.com/${forkFullName}.git`);
   await exec(`git -C "${options.repositoryDirectory}" checkout -b ${options.branchName}`);
   await exec(`git -C "${options.repositoryDirectory}" add .`);
