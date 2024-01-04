@@ -11,21 +11,26 @@ export default async (): Promise<void> => {
     branchName: BASE_BRANCH_NAME,
     fileName: FILE_NAME,
   });
+  
   const pullRequestInfo = await refactor(file);
-  if (pullRequestInfo === undefined) {
-    return;
+    
+  if (!pullRequestInfo) {
+    throw new Error('Pull request information is undefined.');
   }
+  
+  const { branchName, commitMessage, title, description, content } = pullRequestInfo;
+  
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}`,
-    commitMessage: pullRequestInfo.commitMessage,
-    title: pullRequestInfo.title,
-    description: pullRequestInfo.description,
+    branchName: `adam/${branchName}`,
+    commitMessage,
+    title,
+    description,
     updates: [
       {
         fileName: FILE_NAME,
-        content: pullRequestInfo.content,
+        content,
       }
     ],
   });
