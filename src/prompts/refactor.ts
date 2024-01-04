@@ -21,10 +21,18 @@ type Response = {
 
 const readFile = promisify(fs.readFile);
 
+const parseAskResponse = (askResponse: any): Response => {
+  // Perform your logic to validate and convert the `askResponse` to `Response` type
+  // TODO: parse response from `ask` into the Response type
+
+  const { paragraph, patch } = askResponse;
+  return { paragraph, patch };
+}
+
 export default async (filepath: string): Promise<string> => {
   const fileContents = await readFile(filepath, 'utf8');
   const fullPrompt = PROMPT(fileContents);
   const askResponse = await ask(fullPrompt);
-  // TODO: parse response from `ask` into the Response type
-  return askResponse;
+  const response = parseAskResponse(askResponse);
+  return JSON.stringify(response);
 }
