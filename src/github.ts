@@ -3,6 +3,19 @@ import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs/promises';
 import fetch from 'node-fetch';
+import {
+  forkRepository,
+  cloneForkedRepository,
+  setUpstreamRemote,
+  updateFork,
+  commitAndPush,
+  createPullRequest,
+  deleteRepository
+} from '../githubAccess';
+import {
+  writeFile,
+  removeDirectory
+} from '../fileManagement';
 
 const exec = promisify(childProcess.exec);
 
@@ -26,125 +39,28 @@ type PullRequestOptions = {
   repositoryDirectory: string;
 };
 
-type Fork = {
-  owner: {
-    login: string;
-  };
-  full_name: string;
-};
-
-const forkRepository = async (options: PullRequestOptions) => {
-  const url = `https://api.github.com/repos/${options.repository}/forks`;
-  try {
-    let response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    let forks: Fork[] = await response.json();
-    const existingFork = forks.find(fork => fork.owner.login === GITHUB_USERNAME);
-    if (!existingFork) {
-      response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Authorization': `token ${GITHUB_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      const forkResponse = await response.json();
-      return forkResponse.full_name;
-    }
-    return existingFork.full_name;
-  } catch (error) {
-    console.error('Error forking repository:', error);
-    throw error;
-  }
-};
-
-const cloneForkedRepository = async (options: PullRequestOptions, forkFullName: string) => {
-  await exec(`git clone https://${GITHUB_TOKEN}@github.com/${forkFullName}.git "${options.repositoryDirectory}"`);
-};
-
-const setUpstreamRemote = async (options: PullRequestOptions) => {
-  await exec(`git -C "${options.repositoryDirectory}" remote add upstream https://github.com/${options.repository}.git`);
-  await exec(`git -C "${options.repositoryDirectory}" fetch upstream`);
-};
-
-const updateFork = async (options: PullRequestOptions) => {
-  await exec(`git -C "${options.repositoryDirectory}" fetch upstream`);
-  await exec(`git -C "${options.repositoryDirectory}" checkout ${options.baseBranchName}`);
-  await exec(`git -C "${options.repositoryDirectory}" reset --hard upstream/${options.baseBranchName}`);
-  await exec(`git -C "${options.repositoryDirectory}" push -f origin ${options.baseBranchName}`);
-};
-
-const updateFiles = async (options: PullRequestOptions) => {
-  await Promise.all(options.updates.map(update => {
-    const filePath = path.join(options.repositoryDirectory, update.fileName);
-    return fs.writeFile(filePath, update.content, 'utf8');
-  }));
-};
-
-const commitAndPush = async (options: PullRequestOptions, forkFullName: string) => {
-  await exec(`git -C "${options.repositoryDirectory}" config user.name "${GITHUB_USERNAME}"`);
-  await exec(`git -C "${options.repositoryDirectory}" config user.email "${GITHUB_EMAIL}"`);
-  await exec(`git -C "${options.repositoryDirectory}" remote set-url origin https://${GITHUB_TOKEN}@github.com/${forkFullName}.git`);
-  await exec(`git -C "${options.repositoryDirectory}" checkout -b ${options.branchName}`);
-  await exec(`git -C "${options.repositoryDirectory}" add .`);
-  await exec(`git -C "${options.repositoryDirectory}" commit -m "${options.commitMessage}"`);
-  await exec(`git -C "${options.repositoryDirectory}" push -u origin ${options.branchName}`);
-};
-
-const createPullRequest = async (options: PullRequestOptions, forkFullName: string) => {
-  const url = `https://api.github.com/repos/${options.repository}/pulls`;
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        title: options.title,
-        head: `${forkFullName.split('/')[0]}:${options.branchName}`,
-        base: options.baseBranchName,
-        body: options.description,
-      }),
-    });
-    const json = await response.json();
-  } catch (error) {
-    console.error('Error creating pull request:', error);
-    throw error;
-  }
-};
-
-const deleteRepository = async (options: PullRequestOptions) => {
-  await fs.rm(options.repositoryDirectory, {
-    recursive: true,
-    force: true,
-  });
-};
-
 export const createGithubPullRequest = async (
   options: Omit<PullRequestOptions, 'repositoryDirectory'>,
 ) => {
-  try {
-    const fullOptions: PullRequestOptions = {
-      ...options,
-      repositoryDirectory: path.join(__dirname, `.repository${Math.random().toString().substring(2)}`),
-    }
-    const forkFullName = await forkRepository(fullOptions);
-    await cloneForkedRepository(fullOptions, forkFullName);
-    await setUpstreamRemote(fullOptions);
-    await updateFork(fullOptions);
-    await updateFiles(fullOptions);
-    await commitAndPush(fullOptions, forkFullName);
-    await createPullRequest(fullOptions, forkFullName);
-    await deleteRepository(fullOptions);
-  } catch (error) {
-    console.error('An error occurred:', error);
+  const fullOptions: PullRequestOptions = {
+    ...options,
+    repositoryDirectory: path.join(__dirname, `.repository${Math.random().toString().substring(2)}`),
   }
+  const forkFullName = await forkRepository(fullOptions);
+  await cloneForkedRepository(fullOptions, forkFullName);
+  await setUpstreamRemote(fullOptions);
+  await updateFork(fullOptions);
+      
+  for (const update of fullOptions.updates) {
+    const filePath = path.join(fullOptions.repositoryDirectory, update.fileName);
+    await writeFile(filePath, update.content, 'utf8');
+  }
+
+  await commitAndPush(fullOptions, forkFullName);
+  await createPullRequest(fullOptions, forkFullName);
+
+  // Cleaning up by deleting the repository directory
+  await removeDirectory(fullOptions.repositoryDirectory);
 };
 
 type GetFileOptions = {
@@ -155,16 +71,11 @@ type GetFileOptions = {
 
 export const getGithubFile = async (options: GetFileOptions): Promise<string> => {
   const url = `https://raw.githubusercontent.com/${options.repository}/${options.branchName}/${options.fileName}`;
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return await response.text();
-  } catch (error) {
-    console.error('Error fetching file:', error);
-    throw error;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
   }
+  return await response.text();
 };
 
 type GetFilesOptions = {
@@ -201,10 +112,5 @@ export const getGithubFiles = async (options: GetFilesOptions): Promise<string[]
     return files;
   };
 
-  try {
-    return await fetchDirectoryContents();
-  } catch (error) {
-    console.error('Error fetching repository files:', error);
-    throw error;
-  }
+  return await fetchDirectoryContents();
 };
