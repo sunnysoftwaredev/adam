@@ -66,6 +66,18 @@ const cloneForkedRepository = async (forkFullName: string) => {
   await exec(`git clone https://${GITHUB_TOKEN}@github.com/${forkFullName}.git "${REPO_DIR}"`);
 };
 
+const setUpstreamRemote = async (options: PullRequestOptions) => {
+  await exec(`git -C "${REPO_DIR}" remote add upstream https://github.com/${options.repository}.git`);
+  await exec(`git -C "${REPO_DIR}" fetch upstream`);
+};
+
+const updateFork = async (options: PullRequestOptions) => {
+  await exec(`git -C "${REPO_DIR}" fetch upstream`);
+  await exec(`git -C "${REPO_DIR}" checkout ${options.baseBranchName}`);
+  await exec(`git -C "${REPO_DIR}" reset --hard upstream/${options.baseBranchName}`);
+  await exec(`git -C "${REPO_DIR}" push -f origin ${options.baseBranchName}`);
+};
+
 const updateFiles = async (options: PullRequestOptions) => {
   await Promise.all(options.updates.map(update => {
     const filePath = path.join(REPO_DIR, update.fileName);
@@ -115,6 +127,8 @@ export const createGithubPullRequest = async (options: PullRequestOptions) => {
   try {
     const forkFullName = await forkRepository(options);
     await cloneForkedRepository(forkFullName);
+    await setUpstreamRemote(options);
+    await updateFork(options);
     await updateFiles(options);
     await commitAndPush(options, forkFullName);
     await createPullRequest(options, forkFullName);
