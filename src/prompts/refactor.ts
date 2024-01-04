@@ -1,30 +1,20 @@
-import fs from 'fs';
 import { ask } from '../gpt';
-import { promisify } from 'util';
 
-const PROMPT = (code: string): string => `Hello! Below is a TypeScript file.
-
-Please consider if there are any ways that you would refactor it to improve readability or performance (without sacrificing the other).
-
-It is okay if not. But, if you do have suggestions, please respond with a one-paragraph explanation of what you would change (and why), and then a copy of the full file after making your changes. Nothing else. One paragraph, then the new file (if applicable).
-
-I am providing the code within triple-tick-quotes. Please do the same with your code.
-
-\`\`\`
+const PROMPT = (code: string): string => `Hello! Please assume the role of an experienced and talented software engineer named ADAM ...
 ${code}
+...
 \`\`\``;
 
-type Response = {
-  paragraph: string;
-  patch?: string;
+type PullRequestInfo = {
+  title: string,
+  description: string,
+  commitMessage: string,
+  branchName: string,
+  content: string,
 };
 
-const readFile = promisify(fs.readFile);
-
-export default async (filepath: string): Promise<string> => {
-  const fileContents = await readFile(filepath, 'utf8');
-  const fullPrompt = PROMPT(fileContents);
-  const askResponse = await ask(fullPrompt);
-  // TODO: parse response from `ask` into the Response type
-  return askResponse;
-}
+const titlePattern = /Title: ([\s\S]*?)\n\n/;
+const descriptionPattern = /Description: ([\s\S]*?)\n\n/;
+const commitMessagePattern = /Commit message: ([\s\S]*?)\n\n/;
+const branchNamePattern = /Branch name: ([\s\S]*?)\n\n/;
+const contentPattern = /File contents:\n
