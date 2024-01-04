@@ -9,9 +9,16 @@ export const ask = async (prompt: string): Promise<string> => {
     messages: [{ role: 'user', content: prompt }],
     model: MODEL,
   });
-  const response = chatCompletion.choices[0].message.content;
+
+  if (!chatCompletion.choices || chatCompletion.choices.length === 0) {
+    throw new Error('Unexpected empty response from GPT');
+  }
+  
+  const [{ message: { content: response } }] = chatCompletion.choices;
+
   if (response === null) {
     throw new Error('Unexpected null response from GPT');
   }
+
   return response;
 };
