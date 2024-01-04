@@ -1,8 +1,16 @@
 import { createGithubPullRequest, getGithubFile, getGithubFiles } from './github';
 import refactor from './prompts/refactor';
 
-const REPOSITORY = 'sunnysoftwaredev/adam';
-const BASE_BRANCH_NAME = 'master';
+const REPOSITORY = process.env.REPOSITORY;
+const BASE_BRANCH_NAME = process.env.BRANCH;
+
+if (REPOSITORY === undefined) {
+  throw new Error('The REPOSITORY environment variable is required.');
+}
+
+if (BASE_BRANCH_NAME === undefined) {
+  throw new Error('The BRANCH environment variable is required.');
+}
 
 const refactorFile = async (fileName: string): Promise<void> => {
   console.log(`Attempting to refactor ${fileName}`);
