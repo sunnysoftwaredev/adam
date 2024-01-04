@@ -42,29 +42,31 @@ type PullRequestInfo = {
   content: string,
 };
 
-const titlePattern = /Title: ([\s\S]*?)\n\n/;
-const descriptionPattern = /Description: ([\s\S]*?)\n\n/;
-const commitMessagePattern = /Commit message: ([\s\S]*?)\n\n/;
-const branchNamePattern = /Branch name: ([\s\S]*?)\n\n/;
-const contentPattern = /File contents:\n\n```\n([\s\S]*?)```/;
-
-const getTitle = (str: string) => str.match(titlePattern)?.[1].trim() || '';
-const getDescription = (str: string) => str.match(descriptionPattern)?.[1].trim() || '';
-const getCommitMessage = (str: string) => str.match(commitMessagePattern)?.[1].trim() || '';
-const getBranchName = (str: string) => str.match(branchNamePattern)?.[1].trim() || '';
-const getContent = (str: string) => str.match(contentPattern)?.[1].trim() || '';
+const getMatch = (pattern: RegExp, string: string) => {
+  const match = string.match(pattern);
+  if (!match || !match[1]) {
+    throw new Error(`Failed to extract required info using provided pattern: ${pattern}`);
+  }
+  return match[1].trim();
+};
 
 export default async (file: string): Promise<PullRequestInfo | undefined> => {
-  const fullPrompt = PROMPT(file);
-  let askResponse = await ask(fullPrompt);
-  if (askResponse === 'No recommendations.') {
-    return undefined;
+  try {
+    const fullPrompt = PROMPT(file);
+    let askResponse = await ask(fullPrompt);
+
+    if (askResponse === 'No recommendations.') {
+      return undefined;
+    }
+
+    return {
+      title: getMatch(/Title: ([\s\S]*?)\n\n/, askResponse),
+      description: getMatch(/Description: ([\s\S]*?)\n\n/, askResponse),
+      commitMessage: getMatch(/Commit message: ([\s\S]*?)\n\n/, askResponse),
+      branchName: getMatch(/Branch name: ([\s\S]*?)\n\n/, askResponse),
+      content: getMatch(/File contents:\n\n```\n([\s\S]*?)```/, askResponse),
+    };
+  } catch (error) {
+    console.error('Failed to format pull request info: ', error);
   }
-  return {
-    title: getTitle(askResponse),
-    description: getDescription(askResponse),
-    commitMessage: getCommitMessage(askResponse),
-    branchName: getBranchName(askResponse),
-    content: getContent(askResponse),
-  };
 };
