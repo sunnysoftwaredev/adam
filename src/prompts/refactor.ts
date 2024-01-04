@@ -29,6 +29,7 @@ Commit message: {COMMIT_MESSAGE}
 Branch name: {BRANCH_NAME}
 
 File contents:
+
 \`\`\`
 {COMPLETE_UPDATED_FILE_CONTENTS}
 \`\`\``;
@@ -45,7 +46,7 @@ const titlePattern = /Title: ([\s\S]*?)\n\n/;
 const descriptionPattern = /Description: ([\s\S]*?)\n\n/;
 const commitMessagePattern = /Commit message: ([\s\S]*?)\n\n/;
 const branchNamePattern = /Branch name: ([\s\S]*?)\n\n/;
-const contentPattern = /File contents:\n```\n([\s\S]*?)```/;
+const contentPattern = /File contents:\n\n```\n([\s\S]*?)```/;
 
 const getTitle = (str: string) => str.match(titlePattern)?.[1].trim() || '';
 const getDescription = (str: string) => str.match(descriptionPattern)?.[1].trim() || '';
