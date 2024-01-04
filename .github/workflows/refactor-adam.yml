@@ -15,7 +15,6 @@ jobs:
       BRANCH: master
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-      GH_USERNAME: ${{ env.GH_USERNAME }}
 
     steps:
     - name: Checkout repository
