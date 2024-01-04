@@ -16,6 +16,8 @@ If you do not have any worthwhile suggestions, that is okay. Just reply by sayin
 
 You should be concise but include all important details when you write commit messages, pull request titles and descriptions, branch names, etc. For branch names, you use simple kebab-case such as \`api-performance-enhancement\` which is usually going to be all lowercase.
 
+When you reply with your {COMPLETE_UPDATED_FILE_CONTENTS}, do not abbreviate it with comments such as "Keep this part the same." Include the ENTIRE contents of the updated file.
+
 If you do have a suggestion, please respond in EXACTLY the following format, and nothing additional (replacing curly brace parts with your corresponding response):
 
 Title: {PULL_REQUEST_TITLE}
