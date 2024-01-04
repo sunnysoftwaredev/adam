@@ -1,12 +1,6 @@
 import './dotenv';
-import { prTest } from './github';
-import refactor from './prompts/refactor';
-import path from 'path';
+import demo from './demo';
 
-const main = async (): Promise<void> => {
-  // const refactored = await refactor(path.join(__dirname, '../src/gpt.ts'));
-  // console.log(refactored);
-  await prTest();
-};
-
-main();
+demo().catch(e => {
+  console.error('There was an error in the demo.', e);
+});
