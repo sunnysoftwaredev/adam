@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 
 const openai = new OpenAI();
 
-const MODEL = 'gpt-4';
+const MODEL = 'gpt-4-1106-preview';
 
 export const ask = async (prompt: string): Promise<string> => {
   const chatCompletion = await openai.chat.completions.create({
