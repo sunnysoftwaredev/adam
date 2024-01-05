@@ -65,14 +65,6 @@ export default async (file: string): Promise<PullRequestInfo | undefined> => {
     || commitMessage === undefined
     || branchName === undefined
     || content === undefined;
-  console.log('askResponse', askResponse);
-  // console.log({
-  //   title,
-  //   description,
-  //   commitMessage,
-  //   branchName,
-  //   content,
-  // });
   if (incomplete) {
     return undefined;
   }
