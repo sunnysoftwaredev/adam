@@ -4,13 +4,14 @@ import refactor from './prompts/refactor';
 const REPOSITORY = process.env.REPOSITORY;
 const BASE_BRANCH_NAME = process.env.BRANCH;
 
-if (REPOSITORY === undefined) {
-  throw new Error('The REPOSITORY environment variable is required.');
+const checkEnvVar = (envVar: string, name: string) => {
+  if (envVar === undefined) {
+    throw new Error(`The ${name} environment variable is required.`);
+  }
 }
 
-if (BASE_BRANCH_NAME === undefined) {
-  throw new Error('The BRANCH environment variable is required.');
-}
+checkEnvVar(REPOSITORY, 'REPOSITORY');
+checkEnvVar(BASE_BRANCH_NAME, 'BRANCH');
 
 const refactorFile = async (fileName: string): Promise<void> => {
   console.log(`Attempting to refactor ${fileName}`);
@@ -41,16 +42,13 @@ const refactorFile = async (fileName: string): Promise<void> => {
 };
 
 export default async (): Promise<void> => {
-  const files = await getGithubFiles({
+  const filesToRefactor = await getGithubFiles({
     repository: REPOSITORY,
     branchName: BASE_BRANCH_NAME,
+    filterFunc: file => file.endsWith('.ts') || file.endsWith('.tsx'),
+    randomize: true,
+    limit: 10
   });
-  const filesToRefactor = files
-    // Only TypeScript files
-    .filter(file => file.endsWith('.ts') || file.endsWith('.tsx'))
-    // Randomize the order
-    .sort(() => Math.random() > 0.5 ? -1 : 1)
-    // Limit to 10 files
-    .slice(0, 10);
+  
   await Promise.all(filesToRefactor.map(refactorFile));
 };
