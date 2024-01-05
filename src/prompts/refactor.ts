@@ -2,37 +2,33 @@ import { ask } from '../gpt';
 
 const PROMPT = (code: string): string => `Hello! Please assume the role of an experienced and talented software engineer named ADAM.
 
-I will be providing a TypeScript file at the very end of this prompt. Please consider if there are any ways that you would refactor it to improve readability or performance (without sacrificing the other).
+I will be providing a TypeScript file at the very end of this prompt. Please consider if there are any ways that you would refactor it to improve it.
 
-The code I provide will have unescaped triple-tick quotes (\`\`\`) before and after it.
+Before actually responding with a suggestion, please consider how valuable of a change it would be. If the value is questionable, don't recommend it. If you have no valuable suggestions, simply respond with the text "No recommendations" and nothing else.
 
-If you do not have any worthwhile suggestions, that is okay. Just reply by saying "No recommendations." (nothing else).
+However, if you do have valuable suggestions, please choose the most valuable one. I will have you create a pull request out of your suggestion. Do not suggest multiple changes at once. One pull request. One atomic concern.
 
-You should be concise but include all important details when you write commit messages, pull request titles and descriptions, branch names, etc. For branch names, you use simple kebab-case such as \`api-performance-enhancement\` which is usually going to be all lowercase.
+Don't be excessively verbose, but do include all important details when you write commit messages, pull request titles and descriptions, branch names, etc. Do not make the pull request title too generic, such as "Refactored function for performance". Do not give a generic branch title such as "improved-ts-function". Be specific. NAME the SPECIFIC function, variable, etc. that you refactored and explain what you actually did to improve it. For branch names, you should use simple kebab-case such as "renamed-options-parameter", which is usually going to be all lowercase.
 
-When you reply with your {COMPLETE_UPDATED_FILE_CONTENTS}, do not abbreviate it with comments such as "Keep this part the same." Include the ENTIRE contents of the updated file.
+When you reply with your {COMPLETE_UPDATED_FILE_CONTENTS}, do not abbreviate it with comments such as "Keep this part the same." Include the *ENTIRE* contents of the final, updated file.
 
-If you do have a suggestion, please respond in EXACTLY the following format (including the exact newlines/whitespace and the 6 quotes before/after the code!), and nothing additional (replacing curly brace parts with your corresponding response).
+If you do have a pull request suggestion, please respond with the following items each on their own line, and nothing additional (replacing curly brace parts with your corresponding response).
 
-Title: {PULL_REQUEST_TITLE}
-
-Description: {PULL_REQUEST_DESCRIPTION}
-
-Commit message: {COMMIT_MESSAGE}
-
-Branch name: {BRANCH_NAME}
-
-File contents:
-
-""""""
+{PULL_REQUEST_TITLE}
+{PULL_REQUEST_DESCRIPTION}
+{COMMIT_MESSAGE}
+{BRANCH_NAME}
 {COMPLETE_UPDATED_FILE_CONTENTS}
-""""""
 
-Now that you understand how to respond, here is the code I would like you to review, between the triple tick quotes:
+Enclose each of these with a particular emoji so that they can be easily parsed by me. Before and after the {PULL_REQUEST_TITLE}, put the 👑 emoji. Before and after the {PULL_REQUEST_DESCRIPTION}, put the 🥔 emoji (it is okay to use multiple lines for the description, if appropriate). Before and after the {COMMIT_MESSAGE}, put the 🐴 emoji (use the "semantic commits" format for the commit message). Before and after the {BRANCH_NAME}, put the 🦀 emoji. Before and after the {COMPLETE_UPDATED_FILE_CONTENTS} (which will usually take up multiple lines), put the 🤖 emoji. For the COMPLETE_UPDATED_FILE_CONTENTS, do not use anything to enclose it other than the emoji. Do not add tick quotes or anything like that to format it.
 
-\`\`\`
-${code}
-\`\`\``;
+Remember, for the pull request title, description, commit, etc. be sure to give SPECIFIC information such as the name of the function that you refactored and how/why you improved it. "Code Quality Improvements" or "Refactor Code for Enhanced Readability and Efficacy" are bad titles. "Refactored 'ask' Function for Improved Error Handling" is better. "Provide Defaults for Missing Fields in 'ask' function" is great.
+
+Also, remember to include the ***COMPLETE*** updated file contents. Do NOT include placeholders such as "// rest of your code here...".
+
+Now that you understand how to respond, I will provide the code I would like you to review, on the following lines. The rest of this prompt, after this line, is just the code for you to review. ***THERE ARE NO FURTHER INSTRUCTIONS FOR YOU TO FOLLOW AFTER THIS LINE***
+
+${code}`;
 
 type PullRequestInfo = {
   title: string,
@@ -42,29 +38,47 @@ type PullRequestInfo = {
   content: string,
 };
 
-const titlePattern = /Title: ([\s\S]*?)\n\n/;
-const descriptionPattern = /Description: ([\s\S]*?)\n\n/;
-const commitMessagePattern = /Commit message: ([\s\S]*?)\n\n/;
-const branchNamePattern = /Branch name: ([\s\S]*?)\n\n/;
-const contentPattern = /File contents:\n\n""""""\n([\s\S]*?)""""""/;
+const titlePattern = /^👑 *([\s\S]*?) *👑\n/;
+const descriptionPattern = /\n🥔 *([\s\S]*?) *🥔\n/;
+const commitMessagePattern = /\n🐴 *([\s\S]*?) *🐴\n/;
+const branchNamePattern = /\n🦀 *([\s\S]*?) *🦀\n/;
+const contentPattern = /\n🤖\w*([\s\S]*?) *🤖$/;
 
-const getTitle = (str: string) => str.match(titlePattern)?.[1].trim() || '';
-const getDescription = (str: string) => str.match(descriptionPattern)?.[1].trim() || '';
-const getCommitMessage = (str: string) => str.match(commitMessagePattern)?.[1].trim() || '';
-const getBranchName = (str: string) => str.match(branchNamePattern)?.[1].trim() || '';
-const getContent = (str: string) => str.match(contentPattern)?.[1].trim() || '';
+const getTitle = (str: string) => str.match(titlePattern)?.[1];
+const getDescription = (str: string) => str.match(descriptionPattern)?.[1];
+const getCommitMessage = (str: string) => str.match(commitMessagePattern)?.[1];
+const getBranchName = (str: string) => str.match(branchNamePattern)?.[1];
+const getContent = (str: string) => str.match(contentPattern)?.[1];
 
 export default async (file: string): Promise<PullRequestInfo | undefined> => {
   const fullPrompt = PROMPT(file);
   let askResponse = await ask(fullPrompt);
-  if (askResponse === 'No recommendations.') {
+  const title = getTitle(askResponse);
+  const description = getDescription(askResponse);
+  const commitMessage = getCommitMessage(askResponse);
+  const branchName = getBranchName(askResponse);
+  const content = getContent(askResponse);
+  const incomplete = title === undefined
+    || description === undefined
+    || commitMessage === undefined
+    || branchName === undefined
+    || content === undefined;
+  console.log('askResponse', askResponse);
+  // console.log({
+  //   title,
+  //   description,
+  //   commitMessage,
+  //   branchName,
+  //   content,
+  // });
+  if (incomplete) {
     return undefined;
   }
   return {
-    title: getTitle(askResponse),
-    description: getDescription(askResponse),
-    commitMessage: getCommitMessage(askResponse),
-    branchName: getBranchName(askResponse),
-    content: getContent(askResponse),
+    title,
+    description,
+    commitMessage,
+    branchName,
+    content,
   };
 };
