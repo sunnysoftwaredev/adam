@@ -22,7 +22,7 @@ If you do have a pull request suggestion, please respond with the following item
 
 Enclose each of these with a particular emoji so that they can be easily parsed by me. Before and after the {PULL_REQUEST_TITLE}, put the 👑 emoji. Before and after the {PULL_REQUEST_DESCRIPTION}, put the 🥔 emoji (it is okay to use multiple lines for the description, if appropriate). Before and after the {COMMIT_MESSAGE}, put the 🐴 emoji (use the "semantic commits" format for the commit message). Before and after the {BRANCH_NAME}, put the 🦀 emoji. Before and after the {COMPLETE_UPDATED_FILE_CONTENTS} (which will usually take up multiple lines), put the 🤖 emoji. For the COMPLETE_UPDATED_FILE_CONTENTS, do not use anything to enclose it other than the emoji. Do not add tick quotes or anything like that to format it.
 
-It is important that you just put the {COMPLETE_UPDATED_FILE_CONTENTS} between the emoji. Don't add anything else like \`\`\`typescript around it.
+It is important that you just put the {COMPLETE_UPDATED_FILE_CONTENTS} between the emoji. ***DO NOT*** add anything else like \`\`\`typescript around the code in your response.
 
 Remember, for the pull request title, description, commit, etc. be sure to give SPECIFIC information such as the name of the function that you refactored and how/why you improved it. "Code Quality Improvements" or "Refactor Code for Enhanced Readability and Efficacy" are bad titles. "Refactored 'ask' Function for Improved Error Handling" is better. "Provide Defaults for Missing Fields in 'ask' function" is great.
 
