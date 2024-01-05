@@ -1,3 +1,4 @@
+
 import { ask } from '../gpt';
 
 const PROMPT = (code: string): string => `Hello! Please assume the role of an experienced and talented software engineer named ADAM.
@@ -42,29 +43,29 @@ type PullRequestInfo = {
   content: string,
 };
 
-const titlePattern = /Title: ([\s\S]*?)\n\n/;
-const descriptionPattern = /Description: ([\s\S]*?)\n\n/;
-const commitMessagePattern = /Commit message: ([\s\S]*?)\n\n/;
-const branchNamePattern = /Branch name: ([\s\S]*?)\n\n/;
-const contentPattern = /File contents:\n\n""""""\n([\s\S]*?)""""""/;
+const infoPatterns: { [key:string]: RegExp } = {
+  title: /Title: ([\s\S]*?)\n\n/,
+  description: /Description: ([\s\S]*?)\n\n/,
+  commitMessage: /Commit message: ([\s\S]*?)\n\n/,
+  branchName: /Branch name: ([\s\S]*?)\n\n/,
+  content: /File contents:\n\n""""""\n([\s\S]*?)""""""/
+};
 
-const getTitle = (str: string) => str.match(titlePattern)?.[1].trim() || '';
-const getDescription = (str: string) => str.match(descriptionPattern)?.[1].trim() || '';
-const getCommitMessage = (str: string) => str.match(commitMessagePattern)?.[1].trim() || '';
-const getBranchName = (str: string) => str.match(branchNamePattern)?.[1].trim() || '';
-const getContent = (str: string) => str.match(contentPattern)?.[1].trim() || '';
+const extractInfo = (str: string, key: string) => str.match(infoPatterns[key])?.[1].trim() || '';
 
 export default async (file: string): Promise<PullRequestInfo | undefined> => {
   const fullPrompt = PROMPT(file);
   let askResponse = await ask(fullPrompt);
+  
   if (askResponse === 'No recommendations.') {
     return undefined;
   }
+  
   return {
-    title: getTitle(askResponse),
-    description: getDescription(askResponse),
-    commitMessage: getCommitMessage(askResponse),
-    branchName: getBranchName(askResponse),
-    content: getContent(askResponse),
+    title: extractInfo(askResponse, 'title'),
+    description: extractInfo(askResponse, 'description'),
+    commitMessage: extractInfo(askResponse, 'commitMessage'),
+    branchName: extractInfo(askResponse, 'branchName'),
+    content: extractInfo(askResponse, 'content'),
   };
 };
