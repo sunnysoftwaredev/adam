@@ -44,7 +44,7 @@ const titlePattern = /^👑 *([\s\S]*?) *👑\n/;
 const descriptionPattern = /\n🥔 *([\s\S]*?) *🥔\n/;
 const commitMessagePattern = /\n🐴 *([\s\S]*?) *🐴\n/;
 const branchNamePattern = /\n🦀 *([\s\S]*?) *🦀\n/;
-const contentPattern = /\n🤖\w*([\s\S]*?) *🤖$/;
+const contentPattern = /\n🤖\s*([\s\S]*?) *🤖$/;
 
 const getTitle = (str: string) => str.match(titlePattern)?.[1];
 const getDescription = (str: string) => str.match(descriptionPattern)?.[1];
