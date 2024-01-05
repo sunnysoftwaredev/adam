@@ -144,6 +144,7 @@ export const createGithubPullRequest = async (
     await deleteRepository(fullOptions);
   } catch (error) {
     console.error('An error occurred:', error);
+    throw error;
   }
 };
 
