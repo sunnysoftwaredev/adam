@@ -1,3 +1,5 @@
+ 
+```typescript
 import childProcess from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
@@ -33,30 +35,35 @@ type Fork = {
   full_name: string;
 };
 
+const handleForkResponse = async(url: string, forks: Fork[]) => {
+  const existingFork = forks.find(fork => fork.owner.login === GITHUB_USERNAME);
+  let response;
+  if (!existingFork) {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `token ${GITHUB_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    const forkResponse = await response.json();
+    return forkResponse.full_name;
+  }
+  return existingFork.full_name;
+}
+
 const forkRepository = async (options: PullRequestOptions) => {
   const url = `https://api.github.com/repos/${options.repository}/forks`;
   try {
-    let response = await fetch(url, {
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Authorization': `token ${GITHUB_TOKEN}`,
         'Content-Type': 'application/json',
       },
     });
-    let forks: Fork[] = await response.json();
-    const existingFork = forks.find(fork => fork.owner.login === GITHUB_USERNAME);
-    if (!existingFork) {
-      response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Authorization': `token ${GITHUB_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      const forkResponse = await response.json();
-      return forkResponse.full_name;
-    }
-    return existingFork.full_name;
+    const forks: Fork[] = await response.json();
+    return await handleForkResponse(url, forks);
   } catch (error) {
     console.error('Error forking repository:', error);
     throw error;
@@ -208,3 +215,4 @@ export const getGithubFiles = async (options: GetFilesOptions): Promise<string[]
     throw error;
   }
 };
+```
