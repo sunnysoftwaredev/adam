@@ -9,9 +9,16 @@ export const ask = async (prompt: string): Promise<string> => {
     messages: [{ role: 'user', content: prompt }],
     model: MODEL,
   });
-  const response = chatCompletion.choices[0].message.content;
-  if (response === null) {
-    throw new Error('Unexpected null response from GPT');
+
+  if (!chatCompletion?.choices || !chatCompletion.choices[0]?.message) {
+    throw new Error('Invalid response structure from GPT');
   }
+
+  const response = chatCompletion.choices[0].message.content;
+  
+  if (response === null) {
+    throw new Error('Unexpected null response content from GPT');
+  }
+
   return response;
 };
