@@ -1,22 +1,22 @@
 import { createGithubPullRequest, getGithubFile, getGithubFiles } from './github';
 import refactor from './prompts/refactor';
 
-const REPOSITORY = process.env.REPOSITORY;
-const BASE_BRANCH_NAME = process.env.BRANCH;
+const GITHUB_TARGET_REPOSITORY = process.env.GITHUB_TARGET_REPOSITORY;
+const GITHUB_BASE_BRANCH_NAME = process.env.GITHUB_BASE_BRANCH_NAME;
 
-if (REPOSITORY === undefined) {
-  throw new Error('The REPOSITORY environment variable is required.');
+if (GITHUB_TARGET_REPOSITORY === undefined) {
+  throw new Error('The GITHUB_TARGET_REPOSITORY environment variable is required.');
 }
 
-if (BASE_BRANCH_NAME === undefined) {
-  throw new Error('The BRANCH environment variable is required.');
+if (GITHUB_BASE_BRANCH_NAME === undefined) {
+  throw new Error('The GITHUB_BASE_BRANCH_NAME environment variable is required.');
 }
 
 const refactorFile = async (fileName: string): Promise<void> => {
   console.log(`Attempting to refactor ${fileName}`);
   const file = await getGithubFile({
-    repository: REPOSITORY,
-    branchName: BASE_BRANCH_NAME,
+    repository: GITHUB_TARGET_REPOSITORY,
+    branchName: GITHUB_BASE_BRANCH_NAME,
     fileName,
   });
   const pullRequestInfo = await refactor(file);
@@ -24,8 +24,8 @@ const refactorFile = async (fileName: string): Promise<void> => {
     return;
   }
   await createGithubPullRequest({
-    repository: REPOSITORY,
-    baseBranchName: BASE_BRANCH_NAME,
+    repository: GITHUB_TARGET_REPOSITORY,
+    baseBranchName: GITHUB_BASE_BRANCH_NAME,
     branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
@@ -42,8 +42,8 @@ const refactorFile = async (fileName: string): Promise<void> => {
 
 export default async (): Promise<void> => {
   const files = await getGithubFiles({
-    repository: REPOSITORY,
-    branchName: BASE_BRANCH_NAME,
+    repository: GITHUB_TARGET_REPOSITORY,
+    branchName: GITHUB_BASE_BRANCH_NAME,
   });
   const filesToRefactor = files
     // Only TypeScript files
