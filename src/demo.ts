@@ -23,10 +23,16 @@ const refactorFile = async (fileName: string): Promise<void> => {
   if (pullRequestInfo === undefined) {
     return;
   }
+
+  // Use a deterministic, unique timestamp and filename to avoid branch name collisions
+  const timestamp = new Date().toISOString().replace(/[-:.TZ]/g, '');
+  const branchNameSuffix = fileName.replace(/[^a-zA-Z0-9]/g, '-');
+  const uniqueBranchName = `adam/${branchNameSuffix}-${timestamp}`;
+
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
+    branchName: uniqueBranchName,
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
     description: pullRequestInfo.description,
