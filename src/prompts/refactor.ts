@@ -50,7 +50,7 @@ const getTitle = (str: string) => str.match(titlePattern)?.[1];
 const getDescription = (str: string) => str.match(descriptionPattern)?.[1];
 const getCommitMessage = (str: string) => str.match(commitMessagePattern)?.[1];
 const getBranchName = (str: string) => str.match(branchNamePattern)?.[1];
-const getContent = (str: string) => str.match(contentPattern)?.[1];
+const getContent = (str: string) => str.match(contentPattern)?.[1] ?? '';
 
 export default async (file: string): Promise<PullRequestInfo | undefined> => {
   const fullPrompt = PROMPT(file);
