@@ -1,22 +1,22 @@
 import { createGithubPullRequest, getGithubFile, getGithubFiles } from './github';
 import refactor from './prompts/refactor';
 
-const REPOSITORY = process.env.REPOSITORY;
-const BASE_BRANCH_NAME = process.env.BRANCH;
+const REPOSITORY_ENV = process.env.REPOSITORY;
+const BASE_BRANCH_NAME_ENV = process.env.BRANCH;
 
-if (REPOSITORY === undefined) {
-  throw new Error('The REPOSITORY environment variable is required.');
+if (REPOSITORY_ENV === undefined) {
+  throw new Error('The REPOSITORY_ENV environment variable is required.');
 }
 
-if (BASE_BRANCH_NAME === undefined) {
-  throw new Error('The BRANCH environment variable is required.');
+if (BASE_BRANCH_NAME_ENV === undefined) {
+  throw new Error('The BASE_BRANCH_NAME_ENV environment variable is required.');
 }
 
 const refactorFile = async (fileName: string): Promise<void> => {
   console.log(`Attempting to refactor ${fileName}`);
   const file = await getGithubFile({
-    repository: REPOSITORY,
-    branchName: BASE_BRANCH_NAME,
+    repository: REPOSITORY_ENV,
+    branchName: BASE_BRANCH_NAME_ENV,
     fileName,
   });
   const pullRequestInfo = await refactor(file);
@@ -24,8 +24,8 @@ const refactorFile = async (fileName: string): Promise<void> => {
     return;
   }
   await createGithubPullRequest({
-    repository: REPOSITORY,
-    baseBranchName: BASE_BRANCH_NAME,
+    repository: REPOSITORY_ENV,
+    baseBranchName: BASE_BRANCH_NAME_ENV,
     branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
@@ -42,8 +42,8 @@ const refactorFile = async (fileName: string): Promise<void> => {
 
 export default async (): Promise<void> => {
   const files = await getGithubFiles({
-    repository: REPOSITORY,
-    branchName: BASE_BRANCH_NAME,
+    repository: REPOSITORY_ENV,
+    branchName: BASE_BRANCH_NAME_ENV,
   });
   const filesToRefactor = files
     // Only TypeScript files
