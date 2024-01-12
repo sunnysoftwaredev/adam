@@ -1,5 +1,6 @@
 import { createGithubPullRequest, getGithubFile, getGithubFiles } from './github';
 import refactor from './prompts/refactor';
+import crypto from 'crypto';
 
 const REPOSITORY = process.env.REPOSITORY;
 const BASE_BRANCH_NAME = process.env.BRANCH;
@@ -12,6 +13,11 @@ if (BASE_BRANCH_NAME === undefined) {
   throw new Error('The BRANCH environment variable is required.');
 }
 
+const generateBranchName = (base: string, content: string): string => {
+  const contentHash = crypto.createHash('md5').update(content).digest('hex').substring(0, 8);
+  return `adam/${base}-${contentHash}`;
+};
+
 const refactorFile = async (fileName: string): Promise<void> => {
   console.log(`Attempting to refactor ${fileName}`);
   const file = await getGithubFile({
@@ -23,10 +29,11 @@ const refactorFile = async (fileName: string): Promise<void> => {
   if (pullRequestInfo === undefined) {
     return;
   }
+  const branchName = generateBranchName(pullRequestInfo.branchName, pullRequestInfo.content);
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
+    branchName: branchName,
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
     description: pullRequestInfo.description,
@@ -46,11 +53,8 @@ export default async (): Promise<void> => {
     branchName: BASE_BRANCH_NAME,
   });
   const filesToRefactor = files
-    // Only TypeScript files
     .filter(file => file.endsWith('.ts') || file.endsWith('.tsx'))
-    // Randomize the order
     .sort(() => Math.random() > 0.5 ? -1 : 1)
-    // Limit to 10 files
     .slice(0, 10);
   await Promise.all(filesToRefactor.map(refactorFile));
 };
