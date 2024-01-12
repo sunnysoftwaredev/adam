@@ -1,6 +1,6 @@
 import './dotenv';
-import demo from './demo';
+import runDemo from './demo';
 
-demo().catch(e => {
-  console.error('There was an error in the demo.', e);
+runDemo().catch(e => {
+  console.error('There was an error in the runDemo.', e);
 });
