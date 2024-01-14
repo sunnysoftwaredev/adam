@@ -23,10 +23,15 @@ const refactorFile = async (fileName: string): Promise<void> => {
   if (pullRequestInfo === undefined) {
     return;
   }
+  
+  const sanitizedFileName = fileName.replace(/\//g, '-').replace(/\./g, '_');
+  const branchPrefix = `adam/refactor/`;
+  const branchName = `${branchPrefix}${sanitizedFileName}`;
+
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
+    branchName: branchName,
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
     description: pullRequestInfo.description,
