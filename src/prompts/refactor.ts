@@ -32,7 +32,7 @@ Now that you understand how to respond, I will provide the code I would like you
 
 ${code}`;
 
-type PullRequestInfo = {
+type PullRequestDetails = {
   title: string,
   description: string,
   commitMessage: string,
@@ -52,7 +52,7 @@ const getCommitMessage = (str: string) => str.match(commitMessagePattern)?.[1];
 const getBranchName = (str: string) => str.match(branchNamePattern)?.[1];
 const getContent = (str: string) => str.match(contentPattern)?.[1];
 
-export default async (file: string): Promise<PullRequestInfo | undefined> => {
+export default async (file: string): Promise<PullRequestDetails | undefined> => {
   const fullPrompt = PROMPT(file);
   let askResponse = await ask(fullPrompt);
   const title = getTitle(askResponse);
