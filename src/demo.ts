@@ -12,7 +12,7 @@ if (BASE_BRANCH_NAME === undefined) {
   throw new Error('The BRANCH environment variable is required.');
 }
 
-const refactorFile = async (fileName: string): Promise<void> => {
+const createRefactoringPullRequest = async (fileName: string): Promise<void> => {
   console.log(`Attempting to refactor ${fileName}`);
   const file = await getGithubFile({
     repository: REPOSITORY,
@@ -52,5 +52,5 @@ export default async (): Promise<void> => {
     .sort(() => Math.random() > 0.5 ? -1 : 1)
     // Limit to 10 files
     .slice(0, 10);
-  await Promise.all(filesToRefactor.map(refactorFile));
+  await Promise.all(filesToRefactor.map(createRefactoringPullRequest));
 };
