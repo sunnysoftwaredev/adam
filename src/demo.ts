@@ -23,10 +23,13 @@ const refactorFile = async (fileName: string): Promise<void> => {
   if (pullRequestInfo === undefined) {
     return;
   }
+  
+  const timestamp = new Date().toISOString().replace(/[^0-9]/g, '');
+  
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
+    branchName: `adam/${pullRequestInfo.branchName}-${timestamp}`,
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
     description: pullRequestInfo.description,
@@ -52,5 +55,8 @@ export default async (): Promise<void> => {
     .sort(() => Math.random() > 0.5 ? -1 : 1)
     // Limit to 10 files
     .slice(0, 10);
-  await Promise.all(filesToRefactor.map(refactorFile));
+    
+  for (const file of filesToRefactor) {
+    await refactorFile(file);
+  }
 };
