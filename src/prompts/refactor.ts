@@ -37,7 +37,7 @@ type PullRequestInfo = {
   description: string,
   commitMessage: string,
   branchName: string,
-  content: string,
+  updatedFileContents: string,
 };
 
 const titlePattern = /^👑 *([\s\S]*?) *👑\n/;
@@ -50,7 +50,7 @@ const getTitle = (str: string) => str.match(titlePattern)?.[1];
 const getDescription = (str: string) => str.match(descriptionPattern)?.[1];
 const getCommitMessage = (str: string) => str.match(commitMessagePattern)?.[1];
 const getBranchName = (str: string) => str.match(branchNamePattern)?.[1];
-const getContent = (str: string) => str.match(contentPattern)?.[1];
+const getUpdatedFileContents = (str: string) => str.match(contentPattern)?.[1];
 
 export default async (file: string): Promise<PullRequestInfo | undefined> => {
   const fullPrompt = PROMPT(file);
@@ -59,12 +59,12 @@ export default async (file: string): Promise<PullRequestInfo | undefined> => {
   const description = getDescription(askResponse);
   const commitMessage = getCommitMessage(askResponse);
   const branchName = getBranchName(askResponse);
-  const content = getContent(askResponse);
+  const updatedFileContents = getUpdatedFileContents(askResponse);
   const incomplete = title === undefined
     || description === undefined
     || commitMessage === undefined
     || branchName === undefined
-    || content === undefined;
+    || updatedFileContents === undefined;
   if (incomplete) {
     return undefined;
   }
@@ -73,6 +73,6 @@ export default async (file: string): Promise<PullRequestInfo | undefined> => {
     description,
     commitMessage,
     branchName,
-    content,
+    updatedFileContents,
   };
 };
