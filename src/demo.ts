@@ -1,4 +1,6 @@
+```typescript
 import { createGithubPullRequest, getGithubFile, getGithubFiles } from './github';
+import { getLatestCommitSHA } from './git'; // Assumed existence of a 'getLatestCommitSHA' helper function
 import refactor from './prompts/refactor';
 
 const REPOSITORY = process.env.REPOSITORY;
@@ -12,6 +14,11 @@ if (BASE_BRANCH_NAME === undefined) {
   throw new Error('The BRANCH environment variable is required.');
 }
 
+const generateUniqueBranchName = (baseName: string): string => {
+  const commitSHA = getLatestCommitSHA(REPOSITORY).slice(0, 8);
+  return `adam/${baseName}-${commitSHA}`;
+};
+
 const refactorFile = async (fileName: string): Promise<void> => {
   console.log(`Attempting to refactor ${fileName}`);
   const file = await getGithubFile({
@@ -23,10 +30,11 @@ const refactorFile = async (fileName: string): Promise<void> => {
   if (pullRequestInfo === undefined) {
     return;
   }
+  const branchName = generateUniqueBranchName(pullRequestInfo.branchName);
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
+    branchName,
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
     description: pullRequestInfo.description,
@@ -34,7 +42,7 @@ const refactorFile = async (fileName: string): Promise<void> => {
       {
         fileName,
         content: pullRequestInfo.content,
-      }
+      },
     ],
   });
   console.log(`✅ Refactored ${fileName}`);
@@ -54,3 +62,4 @@ export default async (): Promise<void> => {
     .slice(0, 10);
   await Promise.all(filesToRefactor.map(refactorFile));
 };
+```
