@@ -9,9 +9,12 @@ export const ask = async (prompt: string): Promise<string> => {
     messages: [{ role: 'user', content: prompt }],
     model: MODEL,
   });
-  const response = chatCompletion.choices[0].message.content;
-  if (response === null) {
-    throw new Error('Unexpected null response from GPT');
+
+  const choice = chatCompletion.choices[0];
+  
+  if (!choice?.message?.content) {
+    throw new Error('Unexpected null or undefined response from GPT');
   }
-  return response;
+  
+  return choice.message.content;
 };
