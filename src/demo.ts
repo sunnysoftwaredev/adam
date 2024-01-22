@@ -1,3 +1,4 @@
+```typescript
 import { createGithubPullRequest, getGithubFile, getGithubFiles } from './github';
 import refactor from './prompts/refactor';
 
@@ -23,10 +24,11 @@ const refactorFile = async (fileName: string): Promise<void> => {
   if (pullRequestInfo === undefined) {
     return;
   }
+  const timestamp = new Date().getTime(); // Get current timestamp
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
+    branchName: `adam/${pullRequestInfo.branchName}-${timestamp}`, // Use timestamp for unique branch name
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
     description: pullRequestInfo.description,
@@ -54,3 +56,4 @@ export default async (): Promise<void> => {
     .slice(0, 10);
   await Promise.all(filesToRefactor.map(refactorFile));
 };
+```
