@@ -12,6 +12,10 @@ if (BASE_BRANCH_NAME === undefined) {
   throw new Error('The BRANCH environment variable is required.');
 }
 
+const generateRandomBranchName = (prefix: string): string => {
+  return `${prefix}-${Math.random().toString().substring(2)}`;
+};
+
 const refactorFile = async (fileName: string): Promise<void> => {
   console.log(`Attempting to refactor ${fileName}`);
   const file = await getGithubFile({
@@ -26,7 +30,7 @@ const refactorFile = async (fileName: string): Promise<void> => {
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
+    branchName: generateRandomBranchName(`adam/${pullRequestInfo.branchName}`),
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
     description: pullRequestInfo.description,
