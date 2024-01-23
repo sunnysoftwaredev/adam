@@ -1,5 +1,7 @@
+```typescript
 import { createGithubPullRequest, getGithubFile, getGithubFiles } from './github';
 import refactor from './prompts/refactor';
+import { randomBytes } from 'crypto';
 
 const REPOSITORY = process.env.REPOSITORY;
 const BASE_BRANCH_NAME = process.env.BRANCH;
@@ -11,6 +13,8 @@ if (REPOSITORY === undefined) {
 if (BASE_BRANCH_NAME === undefined) {
   throw new Error('The BRANCH environment variable is required.');
 }
+
+const generateUniqueHex = () => randomBytes(8).toString('hex');
 
 const refactorFile = async (fileName: string): Promise<void> => {
   console.log(`Attempting to refactor ${fileName}`);
@@ -26,7 +30,7 @@ const refactorFile = async (fileName: string): Promise<void> => {
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
+    branchName: `adam/${pullRequestInfo.branchName}-${generateUniqueHex()}`,
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
     description: pullRequestInfo.description,
@@ -54,3 +58,4 @@ export default async (): Promise<void> => {
     .slice(0, 10);
   await Promise.all(filesToRefactor.map(refactorFile));
 };
+```
