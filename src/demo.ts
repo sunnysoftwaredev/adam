@@ -12,6 +12,12 @@ if (BASE_BRANCH_NAME === undefined) {
   throw new Error('The BRANCH environment variable is required.');
 }
 
+// Generate a sanitized branch name by removing special characters and limiting the length
+const generateBranchName = (fileName: string): string => {
+  const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9]/g, '-').substring(0, 30);
+  return `adam/${BASE_BRANCH_NAME}-${sanitizedFileName}`;
+};
+
 const refactorFile = async (fileName: string): Promise<void> => {
   console.log(`Attempting to refactor ${fileName}`);
   const file = await getGithubFile({
@@ -26,7 +32,7 @@ const refactorFile = async (fileName: string): Promise<void> => {
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
+    branchName: generateBranchName(fileName),
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
     description: pullRequestInfo.description,
