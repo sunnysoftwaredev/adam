@@ -19,14 +19,18 @@ const refactorFile = async (fileName: string): Promise<void> => {
     branchName: BASE_BRANCH_NAME,
     fileName,
   });
+
   const pullRequestInfo = await refactor(file);
   if (pullRequestInfo === undefined) {
+    console.error(`Failed to refactor ${fileName}: pullRequestInfo is undefined.`);
     return;
   }
+
+  const refactoredBranchName = `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`;
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
+    branchName: refactoredBranchName,
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
     description: pullRequestInfo.description,
