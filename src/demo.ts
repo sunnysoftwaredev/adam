@@ -1,5 +1,6 @@
 import { createGithubPullRequest, getGithubFile, getGithubFiles } from './github';
 import refactor from './prompts/refactor';
+import crypto from 'crypto';
 
 const REPOSITORY = process.env.REPOSITORY;
 const BASE_BRANCH_NAME = process.env.BRANCH;
@@ -12,6 +13,10 @@ if (BASE_BRANCH_NAME === undefined) {
   throw new Error('The BRANCH environment variable is required.');
 }
 
+const generateHash = (input: string) => {
+  return crypto.createHash('md5').update(input).digest("hex").substring(0, 8);
+};
+
 const refactorFile = async (fileName: string): Promise<void> => {
   console.log(`Attempting to refactor ${fileName}`);
   const file = await getGithubFile({
@@ -23,10 +28,12 @@ const refactorFile = async (fileName: string): Promise<void> => {
   if (pullRequestInfo === undefined) {
     return;
   }
+  const timeStamp = new Date().getTime().toString();
+  const branchSuffix = generateHash(timeStamp + fileName);
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
+    branchName: `adam/${pullRequestInfo.branchName}-${branchSuffix}`,
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
     description: pullRequestInfo.description,
