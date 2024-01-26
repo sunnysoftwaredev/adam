@@ -1,4 +1,5 @@
 import { createGithubPullRequest, getGithubFile, getGithubFiles } from './github';
+import { v4 as uuidv4 } from 'uuid';
 import refactor from './prompts/refactor';
 
 const REPOSITORY = process.env.REPOSITORY;
@@ -26,7 +27,7 @@ const refactorFile = async (fileName: string): Promise<void> => {
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
+    branchName: `adam/${pullRequestInfo.branchName}-${uuidv4()}`,
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
     description: pullRequestInfo.description,
