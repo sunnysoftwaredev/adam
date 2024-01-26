@@ -173,7 +173,7 @@ type GetFilesOptions = {
 };
 
 export const getGithubFiles = async (options: GetFilesOptions): Promise<string[]> => {
-  const fetchDirectoryContents = async (path: string = ''): Promise<string[]> => {
+  const fetchDirectoryFilesRecursive = async (path: string = ''): Promise<string[]> => {
     const url = `https://api.github.com/repos/${options.repository}/contents/${path}?ref=${options.branchName}`;
     const response = await fetch(url, {
       headers: {
@@ -193,7 +193,7 @@ export const getGithubFiles = async (options: GetFilesOptions): Promise<string[]
       if (item.type === 'file') {
         files.push(item.path);
       } else if (item.type === 'dir') {
-        const subdirectoryFiles = await fetchDirectoryContents(item.path);
+        const subdirectoryFiles = await fetchDirectoryFilesRecursive(item.path);
         files = files.concat(subdirectoryFiles);
       }
     }
@@ -202,7 +202,7 @@ export const getGithubFiles = async (options: GetFilesOptions): Promise<string[]
   };
 
   try {
-    return await fetchDirectoryContents();
+    return await fetchDirectoryFilesRecursive();
   } catch (error) {
     console.error('Error fetching repository files:', error);
     throw error;
