@@ -12,6 +12,11 @@ if (BASE_BRANCH_NAME === undefined) {
   throw new Error('The BRANCH environment variable is required.');
 }
 
+const getFormattedTimestamp = (): string => {
+  const date = new Date();
+  return `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}${date.getHours().toString().padStart(2, '0')}${date.getMinutes().toString().padStart(2, '0')}${date.getSeconds().toString().padStart(2, '0')}`;
+};
+
 const refactorFile = async (fileName: string): Promise<void> => {
   console.log(`Attempting to refactor ${fileName}`);
   const file = await getGithubFile({
@@ -23,10 +28,11 @@ const refactorFile = async (fileName: string): Promise<void> => {
   if (pullRequestInfo === undefined) {
     return;
   }
+  const timestamp = getFormattedTimestamp();
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
+    branchName: `adam/refactor-${fileName.replace(/\//g, '-')}-${timestamp}`,
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
     description: pullRequestInfo.description,
