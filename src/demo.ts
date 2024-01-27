@@ -1,16 +1,16 @@
 import { createGithubPullRequest, getGithubFile, getGithubFiles } from './github';
 import refactor from './prompts/refactor';
 
-const REPOSITORY = process.env.REPOSITORY;
-const BASE_BRANCH_NAME = process.env.BRANCH;
-
-if (REPOSITORY === undefined) {
-  throw new Error('The REPOSITORY environment variable is required.');
+function ensureEnvVariable(variableName: string): string {
+  const value = process.env[variableName];
+  if (value === undefined) {
+    throw new Error(`The ${variableName} environment variable is required.`);
+  }
+  return value;
 }
 
-if (BASE_BRANCH_NAME === undefined) {
-  throw new Error('The BRANCH environment variable is required.');
-}
+const REPOSITORY = ensureEnvVariable('REPOSITORY');
+const BASE_BRANCH_NAME = ensureEnvVariable('BRANCH');
 
 const refactorFile = async (fileName: string): Promise<void> => {
   console.log(`Attempting to refactor ${fileName}`);
