@@ -1,3 +1,4 @@
+```typescript
 import childProcess from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
@@ -9,6 +10,11 @@ const exec = promisify(childProcess.exec);
 const GITHUB_TOKEN = process.env.GH_PERSONAL_ACCESS_TOKEN;
 const GITHUB_USERNAME = process.env.GH_USERNAME;
 const GITHUB_EMAIL = process.env.GH_EMAIL;
+
+const GITHUB_API_HEADERS = {
+  'Authorization': `token ${GITHUB_TOKEN}`,
+  'Content-Type': 'application/json',
+};
 
 type Update = {
   fileName: string,
@@ -38,20 +44,14 @@ const forkRepository = async (options: PullRequestOptions) => {
   try {
     let response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
+      headers: GITHUB_API_HEADERS,
     });
     let forks: Fork[] = await response.json();
     const existingFork = forks.find(fork => fork.owner.login === GITHUB_USERNAME);
     if (!existingFork) {
       response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Authorization': `token ${GITHUB_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
+        headers: GITHUB_API_HEADERS,
       });
       const forkResponse = await response.json();
       return forkResponse.full_name;
@@ -101,10 +101,7 @@ const createPullRequest = async (options: PullRequestOptions, forkFullName: stri
   try {
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
+      headers: GITHUB_API_HEADERS,
       body: JSON.stringify({
         title: options.title,
         head: `${forkFullName.split('/')[0]}:${options.branchName}`,
@@ -176,10 +173,7 @@ export const getGithubFiles = async (options: GetFilesOptions): Promise<string[]
   const fetchDirectoryContents = async (path: string = ''): Promise<string[]> => {
     const url = `https://api.github.com/repos/${options.repository}/contents/${path}?ref=${options.branchName}`;
     const response = await fetch(url, {
-      headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
+      headers: GITHUB_API_HEADERS,
     });
 
     if (!response.ok) {
@@ -208,3 +202,4 @@ export const getGithubFiles = async (options: GetFilesOptions): Promise<string[]
     throw error;
   }
 };
+``` 
