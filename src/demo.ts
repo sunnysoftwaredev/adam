@@ -1,5 +1,6 @@
 import { createGithubPullRequest, getGithubFile, getGithubFiles } from './github';
 import refactor from './prompts/refactor';
+import shuffle from 'lodash.shuffle';
 
 const REPOSITORY = process.env.REPOSITORY;
 const BASE_BRANCH_NAME = process.env.BRANCH;
@@ -45,12 +46,11 @@ export default async (): Promise<void> => {
     repository: REPOSITORY,
     branchName: BASE_BRANCH_NAME,
   });
-  const filesToRefactor = files
-    // Only TypeScript files
-    .filter(file => file.endsWith('.ts') || file.endsWith('.tsx'))
-    // Randomize the order
-    .sort(() => Math.random() > 0.5 ? -1 : 1)
-    // Limit to 10 files
-    .slice(0, 10);
+  const tsFiles = files
+    .filter(file => file.endsWith('.ts') || file.endsWith('.tsx'));
+
+  // Shuffle TypeScript files and limit to 10
+  const filesToRefactor = shuffle(tsFiles).slice(0, 10);
+
   await Promise.all(filesToRefactor.map(refactorFile));
 };
