@@ -23,10 +23,13 @@ const refactorFile = async (fileName: string): Promise<void> => {
   if (pullRequestInfo === undefined) {
     return;
   }
+  // Create a standardized branch name
+  const timestamp = new Date().getTime();
+  const standardizedBranchName = `adam/refactor-${fileName.replace(/\//g, '-')}-${timestamp}`;
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
+    branchName: standardizedBranchName,
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
     description: pullRequestInfo.description,
