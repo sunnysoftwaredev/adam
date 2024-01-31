@@ -129,11 +129,11 @@ const deleteRepository = async (options: PullRequestOptions) => {
 export const createGithubPullRequest = async (
   options: Omit<PullRequestOptions, 'repositoryDirectory'>,
 ) => {
+  const fullOptions: PullRequestOptions = {
+    ...options,
+    repositoryDirectory: path.join(__dirname, `.repository${Math.random().toString().substring(2)}`),
+  };
   try {
-    const fullOptions: PullRequestOptions = {
-      ...options,
-      repositoryDirectory: path.join(__dirname, `.repository${Math.random().toString().substring(2)}`),
-    }
     const forkFullName = await forkRepository(fullOptions);
     await cloneForkedRepository(fullOptions, forkFullName);
     await setUpstreamRemote(fullOptions);
@@ -141,9 +141,10 @@ export const createGithubPullRequest = async (
     await updateFiles(fullOptions);
     await commitAndPush(fullOptions, forkFullName);
     await createPullRequest(fullOptions, forkFullName);
-    await deleteRepository(fullOptions);
   } catch (error) {
-    console.error('An error occurred:', error);
+    console.error('An error occurred during pull request creation:', error);
+  } finally {
+    await deleteRepository(fullOptions);
   }
 };
 
