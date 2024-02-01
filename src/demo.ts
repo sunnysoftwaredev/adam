@@ -1,22 +1,18 @@
 import { createGithubPullRequest, getGithubFile, getGithubFiles } from './github';
 import refactor from './prompts/refactor';
 
-const REPOSITORY = process.env.REPOSITORY;
-const BASE_BRANCH_NAME = process.env.BRANCH;
+const DEFAULT_REPOSITORY = 'default/repository';
+const DEFAULT_BASE_BRANCH_NAME = 'main';
 
-if (REPOSITORY === undefined) {
-  throw new Error('The REPOSITORY environment variable is required.');
-}
-
-if (BASE_BRANCH_NAME === undefined) {
-  throw new Error('The BRANCH environment variable is required.');
-}
-
-const refactorFile = async (fileName: string): Promise<void> => {
+const refactorFile = async (
+  fileName: string,
+  repository: string = DEFAULT_REPOSITORY,
+  baseBranchName: string = DEFAULT_BASE_BRANCH_NAME
+): Promise<void> => {
   console.log(`Attempting to refactor ${fileName}`);
   const file = await getGithubFile({
-    repository: REPOSITORY,
-    branchName: BASE_BRANCH_NAME,
+    repository,
+    branchName: baseBranchName,
     fileName,
   });
   const pullRequestInfo = await refactor(file);
@@ -24,8 +20,8 @@ const refactorFile = async (fileName: string): Promise<void> => {
     return;
   }
   await createGithubPullRequest({
-    repository: REPOSITORY,
-    baseBranchName: BASE_BRANCH_NAME,
+    repository,
+    baseBranchName,
     branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
@@ -40,10 +36,14 @@ const refactorFile = async (fileName: string): Promise<void> => {
   console.log(`✅ Refactored ${fileName}`);
 };
 
-export default async (): Promise<void> => {
+export default async (repository: string = DEFAULT_REPOSITORY, baseBranchName: string = DEFAULT_BASE_BRANCH_NAME): Promise<void> => {
+  if (repository === undefined || baseBranchName === undefined) {
+    throw new Error('The REPOSITORY and BRANCH environment variables are required.');
+  }
+
   const files = await getGithubFiles({
-    repository: REPOSITORY,
-    branchName: BASE_BRANCH_NAME,
+    repository,
+    branchName: baseBranchName,
   });
   const filesToRefactor = files
     // Only TypeScript files
@@ -52,5 +52,5 @@ export default async (): Promise<void> => {
     .sort(() => Math.random() > 0.5 ? -1 : 1)
     // Limit to 10 files
     .slice(0, 10);
-  await Promise.all(filesToRefactor.map(refactorFile));
+  await Promise.all(filesToRefactor.map(file => refactorFile(file, repository, baseBranchName)));
 };
