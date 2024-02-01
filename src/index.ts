@@ -1,6 +1,10 @@
 import './dotenv';
 import demo from './demo';
 
-demo().catch(e => {
-  console.error('There was an error in the demo.', e);
-});
+(async () => {
+  try {
+    await demo();
+  } catch (e) {
+    console.error('There was an error in the demo.', e);
+  }
+})();
