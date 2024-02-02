@@ -1,5 +1,6 @@
 import { createGithubPullRequest, getGithubFile, getGithubFiles } from './github';
 import refactor from './prompts/refactor';
+import { format } from 'date-fns';
 
 const REPOSITORY = process.env.REPOSITORY;
 const BASE_BRANCH_NAME = process.env.BRANCH;
@@ -21,12 +22,15 @@ const refactorFile = async (fileName: string): Promise<void> => {
   });
   const pullRequestInfo = await refactor(file);
   if (pullRequestInfo === undefined) {
+    console.error(`⚠️ No pull request info returned for '${fileName}'; skipping.`);
     return;
   }
+  
+  const timestamp = format(new Date(), 'yyyyMMddHHmmss');
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
+    branchName: `adam/${pullRequestInfo.branchName}-${timestamp}`,
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
     description: pullRequestInfo.description,
