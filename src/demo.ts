@@ -1,15 +1,16 @@
+```typescript
 import { createGithubPullRequest, getGithubFile, getGithubFiles } from './github';
 import refactor from './prompts/refactor';
 
 const REPOSITORY = process.env.REPOSITORY;
 const BASE_BRANCH_NAME = process.env.BRANCH;
 
-if (REPOSITORY === undefined) {
-  throw new Error('The REPOSITORY environment variable is required.');
+if (!REPOSITORY) {
+  throw new Error('The "REPOSITORY" environment variable is not set. Please define it before running the script.');
 }
 
-if (BASE_BRANCH_NAME === undefined) {
-  throw new Error('The BRANCH environment variable is required.');
+if (!BASE_BRANCH_NAME) {
+  throw new Error('The "BRANCH" environment variable is not set. Please define it before running the script.');
 }
 
 const refactorFile = async (fileName: string): Promise<void> => {
@@ -54,3 +55,4 @@ export default async (): Promise<void> => {
     .slice(0, 10);
   await Promise.all(filesToRefactor.map(refactorFile));
 };
+```
