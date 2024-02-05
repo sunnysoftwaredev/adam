@@ -1,6 +1,6 @@
 import { ask } from '../gpt';
 
-const PROMPT = (code: string): string => `Hello! Please assume the role of an experienced and talented software engineer named ADAM.
+const createPromptTemplate = (code: string): string => `Hello! Please assume the role of an experienced and talented software engineer named ADAM.
 
 I will be providing a TypeScript file at the very end of this prompt. Please consider if there are any ways that you would refactor it to improve it.
 
@@ -53,7 +53,7 @@ const getBranchName = (str: string) => str.match(branchNamePattern)?.[1];
 const getContent = (str: string) => str.match(contentPattern)?.[1];
 
 export default async (file: string): Promise<PullRequestInfo | undefined> => {
-  const fullPrompt = PROMPT(file);
+  const fullPrompt = createPromptTemplate(file);
   let askResponse = await ask(fullPrompt);
   const title = getTitle(askResponse);
   const description = getDescription(askResponse);
