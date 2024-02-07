@@ -44,13 +44,13 @@ const titlePattern = /^👑 *([\s\S]*?) *👑\n/;
 const descriptionPattern = /\n🥔 *([\s\S]*?) *🥔\n/;
 const commitMessagePattern = /\n🐴 *([\s\S]*?) *🐴\n/;
 const branchNamePattern = /\n🦀 *([\s\S]*?) *🦀\n/;
-const contentPattern = /\n🤖\s*([\s\S]*?) *🤖$/;
+const contentPattern = /\n🤖\s*([\s\S]*?)🤖$/;
 
 const getTitle = (str: string) => str.match(titlePattern)?.[1];
 const getDescription = (str: string) => str.match(descriptionPattern)?.[1];
 const getCommitMessage = (str: string) => str.match(commitMessagePattern)?.[1];
 const getBranchName = (str: string) => str.match(branchNamePattern)?.[1];
-const getContent = (str: string) => str.match(contentPattern)?.[1];
+const getContent = (str: string) => str.match(contentPattern)?.[1].replace(/(?<=\S) *$/, ' ');
 
 export default async (file: string): Promise<PullRequestInfo | undefined> => {
   const fullPrompt = PROMPT(file);
