@@ -40,34 +40,30 @@ type PullRequestInfo = {
   content: string,
 };
 
+const extractDataUsingPattern = (str: string, pattern: RegExp) => {
+  return str.match(pattern)?.[1];
+};
+
 const titlePattern = /^👑 *([\s\S]*?) *👑\n/;
 const descriptionPattern = /\n🥔 *([\s\S]*?) *🥔\n/;
 const commitMessagePattern = /\n🐴 *([\s\S]*?) *🐴\n/;
 const branchNamePattern = /\n🦀 *([\s\S]*?) *🦀\n/;
 const contentPattern = /\n🤖\s*([\s\S]*?) *🤖$/;
 
-const getTitle = (str: string) => str.match(titlePattern)?.[1];
-const getDescription = (str: string) => str.match(descriptionPattern)?.[1];
-const getCommitMessage = (str: string) => str.match(commitMessagePattern)?.[1];
-const getBranchName = (str: string) => str.match(branchNamePattern)?.[1];
-const getContent = (str: string) => str.match(contentPattern)?.[1];
-
 export default async (file: string): Promise<PullRequestInfo | undefined> => {
   const fullPrompt = PROMPT(file);
   let askResponse = await ask(fullPrompt);
-  const title = getTitle(askResponse);
-  const description = getDescription(askResponse);
-  const commitMessage = getCommitMessage(askResponse);
-  const branchName = getBranchName(askResponse);
-  const content = getContent(askResponse);
-  const incomplete = title === undefined
-    || description === undefined
-    || commitMessage === undefined
-    || branchName === undefined
-    || content === undefined;
+  const title = extractDataUsingPattern(askResponse, titlePattern);
+  const description = extractDataUsingPattern(askResponse, descriptionPattern);
+  const commitMessage = extractDataUsingPattern(askResponse, commitMessagePattern);
+  const branchName = extractDataUsingPattern(askResponse, branchNamePattern);
+  const content = extractDataUsingPattern(askResponse, contentPattern);
+  
+  const incomplete = !title || !description || !commitMessage || !branchName || !content;
   if (incomplete) {
     return undefined;
   }
+
   return {
     title,
     description,
