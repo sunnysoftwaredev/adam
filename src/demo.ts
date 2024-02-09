@@ -23,10 +23,13 @@ const refactorFile = async (fileName: string): Promise<void> => {
   if (pullRequestInfo === undefined) {
     return;
   }
+
+  // Create a timestamp-based identifier for a unique branch name
+  const timestamp = new Date().getTime();
   await createGithubPullRequest({
     repository: REPOSITORY,
     baseBranchName: BASE_BRANCH_NAME,
-    branchName: `adam/${pullRequestInfo.branchName}-${Math.random().toString().substring(2)}`,
+    branchName: `adam/${pullRequestInfo.branchName}-${timestamp}`,
     commitMessage: pullRequestInfo.commitMessage,
     title: pullRequestInfo.title,
     description: pullRequestInfo.description,
@@ -34,7 +37,7 @@ const refactorFile = async (fileName: string): Promise<void> => {
       {
         fileName,
         content: pullRequestInfo.content,
-      }
+      },
     ],
   });
   console.log(`✅ Refactored ${fileName}`);
