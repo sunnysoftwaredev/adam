@@ -1,3 +1,4 @@
+```typescript
 import childProcess from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
@@ -158,7 +159,7 @@ export const getGithubFile = async (options: GetFileOptions): Promise<string> =>
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`Error fetching file: HTTP status ${response.status}`);
     }
     return await response.text();
   } catch (error) {
@@ -208,3 +209,4 @@ export const getGithubFiles = async (options: GetFilesOptions): Promise<string[]
     throw error;
   }
 };
+```
