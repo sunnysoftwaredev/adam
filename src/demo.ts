@@ -21,6 +21,7 @@ const refactorFile = async (fileName: string): Promise<void> => {
   });
   const pullRequestInfo = await refactor(file);
   if (pullRequestInfo === undefined) {
+    console.error(`❌ Failed to refactor ${fileName}`);
     return;
   }
   await createGithubPullRequest({
